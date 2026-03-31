@@ -1,0 +1,161 @@
+# Installing packages
+require(tidyverse)
+theme_minimal(0)
+
+# To read the data
+data <- read.csv("slump_test.csv")
+View(data)
+
+# To check the  data for duplicates
+str(data)
+colSums(is.na(data))
+duplicates <- duplicated(data)
+data[duplicates, ]
+
+# Deleting duplicates
+data_unique <- data[!duplicated(data), ]
+
+# Boxplot for outlier
+boxplot(data_unique, 
+        col = rainbow(ncol(data_unique)),  # Assigns a different color to each box
+        main = "Boxplot of Slump data")
+
+
+# Calculating correlation matrix
+cor_matrix <- cor(data_unique)
+print(cor_matrix)
+
+# Pair plotting individually for checking linearity based upon correlation
+
+# Pair 1
+ggplot(data_unique, aes(x = strength, y = cement)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "blue")+
+  labs(title = "Strength vs Cement", x = "Strength", y = "Cement") +
+  theme_minimal() +
+  theme(
+    panel.grid = element_blank(),  
+    axis.line = element_line(color = "black")  
+  )
+
+# Pair 2
+ggplot(data_unique, aes(x = strength, y = fly_ash)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "blue")+
+  labs(title = "Strength vs Fly_Ash", x = "Strength", y = "Fly_Ash") +
+  theme_minimal() +
+  theme(
+    panel.grid = element_blank(),  
+    axis.line = element_line(color = "black")  
+  )
+
+
+# Pair 3
+ggplot(data_unique, aes(x = strength, y = slump)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "blue")+
+  labs(title = "Strength vs slump", x = "Strength", y = "Slump") +
+  theme_minimal() +
+  theme(
+    panel.grid = element_blank(),  
+    axis.line = element_line(color = "black")  
+  )
+
+# Pair 4
+ggplot(data_unique, aes(x = strength, y = water)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "blue")+
+  labs(title = "Strength vs Water", x = "Strength", y = "Water") +
+  theme_minimal() +
+  theme(
+    panel.grid = element_blank(),  
+    axis.line = element_line(color = "black")  
+  )
+
+# Pair 5
+ggplot(data_unique, aes(x = strength, y = coarse_aggr)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "blue")+
+  labs(title = "Strength vs Coarse Aggr", x = "Strength", y = "Coarse Aggr") +
+  theme_minimal() +
+  theme(
+    panel.grid = element_blank(),  
+    axis.line = element_line(color = "black")  
+  )
+
+
+# Descriptive statistics
+summary(data_unique)
+
+# Regression analysis
+
+# Model 1
+model1 <- lm(strength ~ water+cement+fly_ash,data=data_unique)
+summary(model1)
+par(mfrow=c(2, 2))
+plot(model1)
+
+# Model 2
+model2 <- lm(strength ~ cement+fly_ash,data=data_unique)
+summary(model2)
+par(mfrow=c(2, 2))
+plot(model2)
+
+
+# Model 3
+model3<-lm(strength~slag+water+coarse_aggr+fine_aggr+fly_ash,data=data_unique)
+summary(model3)
+par(mfrow=c(2, 2))
+plot(model3)
+
+# Analzying the fit
+
+# Is model 3 the variable normally distributed?
+hist(residuals(model3))
+library(lmtest)
+bptest(model3)
+shapiro.test(model3$residuals)
+
+# Transforming the model with square root function : Model_sqrt
+model_sqrt <- lm(sqrt(strength) ~ slag + water + coarse_aggr + fine_aggr+fly_ash, data = data_unique)
+summary(model_sqrt)
+par(mfrow=c(2, 2))
+plot(model_sqrt)
+
+# Again testing the assumptions
+hist(residuals(model_sqrt))
+library(lmtest)
+bptest(model_sqrt)
+shapiro.test(model_sqrt$residuals)
+
+# Model 4
+model4<-lm(strength~slag+water+coarse_aggr+fine_aggr+fly_ash+cement+slump+flow,data=data_unique)
+summary(model4)
+par(mfrow=c(2, 2))
+plot(model4)
+
+# Analzying the fit
+
+# Is model 4 the variable normally distributed?
+hist(residuals(model4))
+library(lmtest)
+bptest(model4)
+shapiro.test(model4$residuals)
+
+# Model 5
+model5<-lm(strength~+water+coarse_aggr+fly_ash+cement+slump,data=data_unique)
+summary(model5)
+par(mfrow=c(2, 2))
+plot(model5)
+
+# Analzying the fit
+
+# Is model 5 the variable normally distributed?
+hist(residuals(model5))
+library(lmtest)
+bptest(model5)
+shapiro.test(model5$residuals)
+
+
+
+
